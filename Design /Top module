@@ -1,0 +1,37 @@
+`timescale 1ns / 1ps
+
+module uart_top(
+    input  clk,
+    input  rst,
+    input  Tx_start,        // trigger transmit
+    input  [7:0] Tx_data,   // byte to send
+    output Tx,              // UART TX out
+    output [7:0] Rx_data,   // received byte
+    output ready,           // RX ready flag
+    output busy             // TX busy flag
+);
+
+/////////////////////////////////////////////////////////
+// UART TRANSMITTER
+/////////////////////////////////////////////////////////
+UART_Tx U1_Tx (
+    .clk(clk),
+    .rst(rst),
+    .Tx_start(Tx_start),
+    .Tx_data(Tx_data),
+    .Tx(Tx),            // TX output
+    .busy(busy)         // transmitter busy
+);
+
+/////////////////////////////////////////////////////////
+// UART RECEIVER
+/////////////////////////////////////////////////////////
+UART_Rx U2_Rx (
+    .clk(clk),
+    .rst(rst),
+    .Rx(Tx),            // loop TX into RX
+    .Rx_data(Rx_data),
+    .ready(ready)
+);
+
+endmodule
