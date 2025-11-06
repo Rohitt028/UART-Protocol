@@ -1,0 +1,83 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 30.09.2025 11:03:56
+// Design Name: 
+// Module Name: UART_Tx
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module UART_Tx(
+input clk,
+input rst,
+input Tx_start,
+input [7:0] Tx_data,
+output reg Tx,
+output reg busy 
+
+);
+parameter CLKS_PER_BIT = 16;  
+
+reg [3:0] bit_index;
+reg [15:0] clk_count;
+reg [9:0] shift_reg;
+
+always @(posedge clk or posedge rst) begin
+if(rst) begin
+Tx <= 1;
+busy <= 0;
+bit_index <= 0;
+clk_count <= 0;
+end else
+ 
+begin
+if(Tx_start && !busy) 
+begin
+shift_reg <= {1'b1, Tx_data, 1'b0}; 
+busy <= 1;
+bit_index <= 0;
+clk_count <= 0;
+end
+else if(busy) 
+
+begin
+if(clk_count < CLKS_PER_BIT-1)
+clk_count <= clk_count + 1;
+else 
+
+begin
+clk_count <= 0;
+Tx <= shift_reg[0];
+shift_reg <= {1'b1, shift_reg[9:1]};
+if(bit_index < 9)
+bit_index <= bit_index + 1;
+else
+busy <= 0;
+end
+end
+end
+end
+endmodule
+
+
+
+
+
+
+
+
+
+
