@@ -1,0 +1,63 @@
+`timescale 1ns / 1ps
+
+module UART_tb;
+reg clk;
+reg rst;
+reg tx_start;
+reg [7:0] tx_data;
+wire tx;
+wire busy;
+wire [7:0] rx_data;
+wire ready;
+UART_Tx uut1 (
+    .clk(clk),
+    .rst(rst),
+    .Tx_start(tx_start),
+    .Tx_data(tx_data),
+    .Tx(tx),
+    .busy(busy)
+);
+UART_Rx uut2 (
+    .clk(clk),
+    .rst(rst),
+    .Rx(tx),
+    .Rx_data(rx_data),
+    .ready(ready)
+);
+initial clk = 0;
+always #10 clk = ~clk;
+initial begin
+    rst = 1;
+    tx_start = 0;
+    tx_data = 0;
+    #50;
+    rst = 0;
+
+    send_byte(8'h41);
+    send_byte(8'h42); 
+    send_byte(8'h43); 
+    
+    #40000;
+    $finish;
+end
+task send_byte(input [7:0] data);
+begin
+@(negedge clk);
+tx_data = data;
+tx_start = 1;
+@(negedge clk);
+tx_start = 0;
+wait(busy == 1);  
+wait(busy == 0);  
+wait(ready == 1); 
+end
+endtask
+
+always @(posedge ready) begin
+    $display("Time=%0t : Received byte = %h (%c)", $time, rx_data, rx_data);
+end
+endmodule
+
+
+
+
