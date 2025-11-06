@@ -1,0 +1,71 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 30.09.2025 11:43:02
+// Design Name: 
+// Module Name: UART_Rx
+module UART_Rx(
+input clk,
+input rst,
+input Rx,
+output reg [7:0] Rx_data,
+output reg ready
+ );
+
+parameter CLKS_PER_BIT = 16;
+
+reg [3:0] bit_index;
+reg [15:0] clk_count;
+reg [7:0] shift_reg;
+reg receiving;
+
+always @(posedge clk or posedge rst) 
+begin
+if (rst) begin
+Rx_data <= 1;
+receiving <= 0;
+ready <= 0;
+bit_index <= 0;
+clk_count <= 0;
+shift_reg <= 0;
+Rx_data <= 0;
+end else 
+
+begin
+Rx_data <= Rx;  
+ready <= 0;
+if (!receiving && Rx_data == 1 && Rx == 0)
+
+begin
+receiving <= 1;
+clk_count <= CLKS_PER_BIT / 2;
+bit_index <= 0;
+end 
+
+else if (receiving) 
+begin
+if (clk_count < CLKS_PER_BIT-1)
+clk_count <= clk_count + 1;
+else begin
+clk_count <= 0;
+if (bit_index < 8) 
+begin
+shift_reg[bit_index] <= Rx;
+bit_index <= bit_index + 1;
+end 
+else begin
+Rx_data <= shift_reg;
+ready <= 1;
+receiving <= 0;
+end end end end end
+endmodule
+
+
+
+
+
+
+
+
